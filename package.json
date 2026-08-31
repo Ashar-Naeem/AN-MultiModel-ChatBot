@@ -1,0 +1,24 @@
+{
+  "name": "groq-chat-bot",
+  "version": "1.0.0",
+  "description": "Groq AI Chatbot with Express backend and React frontend",
+  "main": "server.js",
+  "scripts": {
+    "server": "node server.js",
+    "client": "npm run dev --prefix frontend",
+    "dev": "node server.js",
+    "build:frontend": "npm run build --prefix frontend"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "groq-sdk": "^1.6.0",
+    "openai": "^7.7.0"
+  }
+}
+
