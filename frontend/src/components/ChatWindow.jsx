@@ -1,23 +1,23 @@
-import React, { useState, useEffect, useRef } from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { 
-  Bot, 
-  Copy, 
-  Check, 
-  RefreshCw, 
-  ArrowDown, 
+import React, { useState, useEffect, useRef } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import {
+  Copy,
+  Check,
+  RefreshCw,
+  ArrowDown,
   AlertCircle,
   Terminal,
-  Flame
-} from 'lucide-react';
+  Sparkles,
+  User,
+} from "lucide-react";
 
 // Custom Code Block component with Copy button & Language Badge
 function CodeBlock({ children, className }) {
   const [copied, setCopied] = useState(false);
-  const match = /language-(\w+)/.exec(className || '');
-  const language = match ? match[1] : 'code';
-  const codeText = String(children).replace(/\n$/, '');
+  const match = /language-(\w+)/.exec(className || "");
+  const language = match ? match[1] : "code";
+  const codeText = String(children).replace(/\n$/, "");
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(codeText);
@@ -28,19 +28,28 @@ function CodeBlock({ children, className }) {
   return (
     <div className="code-block-wrapper">
       <div className="code-block-header">
-        <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#a1919a' }}>
-          <Terminal size={12} />
-          <span>{language}</span>
+        <span
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.4rem",
+            color: "#94a3b8",
+          }}
+        >
+          <Terminal size={13} color="#38bdf8" />
+          <span style={{ textTransform: "lowercase", fontWeight: 600 }}>
+            {language}
+          </span>
         </span>
-        <button onClick={copyToClipboard}>
+        <button onClick={copyToClipboard} aria-label="Copy code block">
           {copied ? (
             <>
-              <Check size={12} color="#10b981" />
-              <span style={{ color: '#10b981' }}>Copied!</span>
+              <Check size={13} color="#34d399" />
+              <span style={{ color: "#34d399" }}>Copied!</span>
             </>
           ) : (
             <>
-              <Copy size={12} />
+              <Copy size={13} />
               <span>Copy</span>
             </>
           )}
@@ -53,23 +62,24 @@ function CodeBlock({ children, className }) {
   );
 }
 
-export default function ChatWindow({ 
-  messages, 
-  isGenerating, 
+export default function ChatWindow({
+  messages,
+  isGenerating,
   onRegenerate,
-  streamingMessage
+  streamingMessage,
 }) {
   const [copiedIndex, setCopiedIndex] = useState(null);
   const [showScrollBottom, setShowScrollBottom] = useState(false);
   const messagesEndRef = useRef(null);
   const containerRef = useRef(null);
+  const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
 
   // Auto-scroll to bottom when messages or streaming updates
   const scrollToBottom = (smooth = true) => {
     if (containerRef.current) {
       containerRef.current.scrollTo({
         top: containerRef.current.scrollHeight,
-        behavior: smooth ? 'smooth' : 'auto'
+        behavior: smooth ? "smooth" : "auto",
       });
     }
   };
@@ -82,7 +92,7 @@ export default function ChatWindow({
   const handleScroll = () => {
     if (!containerRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
-    const isUp = scrollHeight - scrollTop - clientHeight > 150;
+    const isUp = scrollHeight - scrollTop - clientHeight > 120;
     setShowScrollBottom(isUp);
   };
 
@@ -94,26 +104,41 @@ export default function ChatWindow({
 
   const markdownComponents = {
     code({ node, inline, className, children, ...props }) {
-      if (inline) return <code className={className} {...props}>{children}</code>;
+      if (inline)
+        return (
+          <code className={className} {...props}>
+            {children}
+          </code>
+        );
       return <CodeBlock className={className}>{children}</CodeBlock>;
-    }
+    },
   };
 
   return (
-    <div 
+    <div
       ref={containerRef}
       onScroll={handleScroll}
       style={{
         flex: 1,
-        overflowY: 'auto',
-        overflowX: 'hidden',
-        padding: '2rem 1.5rem 3rem 1.5rem',
-        position: 'relative',
+        overflowY: "auto",
+        overflowX: "hidden",
+        padding: isMobile
+          ? "1rem 0.7rem 2.5rem 0.7rem"
+          : "1.5rem 1rem 3rem 1rem",
+        position: "relative",
+        WebkitOverflowScrolling: "touch",
       }}
     >
-      <div style={{ maxWidth: '820px', margin: '0 auto', width: '100%', minWidth: 0 }}>
+      <div
+        style={{
+          maxWidth: "820px",
+          margin: "0 auto",
+          width: "100%",
+          minWidth: 0,
+        }}
+      >
         {messages.map((msg, idx) => {
-          const isUser = msg.role === 'user';
+          const isUser = msg.role === "user";
           const isError = msg.isError;
 
           if (isUser) {
@@ -122,42 +147,109 @@ export default function ChatWindow({
                 key={idx}
                 className="fade-in"
                 style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'flex-end',
-                  marginBottom: '1.6rem',
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-end",
+                  marginBottom: "1.5rem",
+                  width: "100%",
                 }}
               >
-                <span style={{
-                  fontSize: '0.7rem',
-                  color: '#6b5a60',
-                  marginBottom: '0.3rem',
-                  fontWeight: 600,
-                  paddingRight: '0.25rem',
-                  letterSpacing: '0.3px',
-                  textTransform: 'uppercase',
-                }}>
+                <span
+                  style={{
+                    fontSize: "0.7rem",
+                    color: "#64748b",
+                    marginBottom: "0.35rem",
+                    fontWeight: 600,
+                    paddingRight: "0.3rem",
+                    letterSpacing: "0.4px",
+                    textTransform: "uppercase",
+                  }}
+                >
                   You
                 </span>
 
-                <div style={{
-                  background: 'linear-gradient(135deg, #e11d48 0%, #9f1239 100%)',
-                  border: '1px solid rgba(225, 29, 72, 0.3)',
-                  borderRadius: '18px 18px 4px 18px',
-                  padding: '0.8rem 1.2rem',
-                  color: '#fff',
-                  maxWidth: '78%',
-                  boxShadow: '0 4px 20px rgba(225, 29, 72, 0.25)',
-                  wordBreak: 'break-word',
-                }}>
-                  <div className="markdown-content" style={{ color: '#fff' }}>
-                    <ReactMarkdown 
-                      remarkPlugins={[remarkGfm]}
-                      components={markdownComponents}
+                <div
+                  style={{
+                    background:
+                      "linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #6366f1 100%)",
+                    border: "1px solid rgba(255, 255, 255, 0.15)",
+                    borderRadius: "18px 18px 4px 18px",
+                    padding: "0.85rem 1.2rem",
+                    color: "#ffffff",
+                    maxWidth: isMobile ? "100%" : "85%",
+                    boxShadow: "0 4px 22px rgba(37, 99, 235, 0.28)",
+                    wordBreak: "break-word",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.6rem",
+                  }}
+                >
+                  {/* Render Attached Image if exists */}
+                  {msg.image && (
+                    <div
+                      style={{
+                        borderRadius: "12px",
+                        overflow: "hidden",
+                        maxHeight: "280px",
+                        maxWidth: "100%",
+                        background: "rgba(0,0,0,0.3)",
+                      }}
                     >
-                      {msg.content}
-                    </ReactMarkdown>
-                  </div>
+                      <img
+                        src={msg.image}
+                        alt="User attached image"
+                        style={{
+                          width: "100%",
+                          maxHeight: "280px",
+                          objectFit: "contain",
+                          display: "block",
+                          borderRadius: "10px",
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Render Multiple Media Items if present */}
+                  {Array.isArray(msg.media) &&
+                    msg.media.length > 0 &&
+                    !msg.image && (
+                      <div
+                        style={{
+                          display: "flex",
+                          flexWrap: "wrap",
+                          gap: "0.5rem",
+                        }}
+                      >
+                        {msg.media.map((med, mIdx) => (
+                          <img
+                            key={mIdx}
+                            src={med.data || med}
+                            alt="Attached media"
+                            style={{
+                              maxHeight: "200px",
+                              maxWidth: "100%",
+                              objectFit: "contain",
+                              borderRadius: "10px",
+                            }}
+                          />
+                        ))}
+                      </div>
+                    )}
+
+                  {/* Message Text */}
+                  {msg.content && (
+                    <div
+                      className="markdown-content"
+                      style={{ color: "#ffffff" }}
+                    >
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={markdownComponents}
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -168,79 +260,100 @@ export default function ChatWindow({
               key={idx}
               className="fade-in"
               style={{
-                display: 'flex',
-                gap: '0.8rem',
-                marginBottom: '1.6rem',
-                alignItems: 'flex-start',
+                display: "flex",
+                gap: "0.75rem",
+                marginBottom: "1.6rem",
+                alignItems: "flex-start",
+                width: "100%",
               }}
             >
-              {/* Avatar */}
-              <div style={{
-                width: '34px',
-                height: '34px',
-                borderRadius: '10px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-                background: isError 
-                  ? 'rgba(239, 68, 68, 0.2)'
-                  : 'linear-gradient(135deg, #e11d48 0%, #9f1239 100%)',
-                boxShadow: isError
-                  ? '0 4px 12px rgba(239,68,68,0.2)'
-                  : '0 4px 16px rgba(225, 29, 72, 0.3)',
-                marginTop: '1.35rem',
-                border: isError
-                  ? '1px solid rgba(239,68,68,0.3)'
-                  : '1px solid rgba(225,29,72,0.2)',
-              }}>
-                {isError 
-                  ? <AlertCircle size={16} color="#f87171" />
-                  : <Flame size={16} color="#fff" />
-                }
+              {/* AN Avatar */}
+              <div
+                style={{
+                  width: "34px",
+                  height: "34px",
+                  borderRadius: "10px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                  background: isError
+                    ? "rgba(239, 68, 68, 0.2)"
+                    : "linear-gradient(135deg, #2563eb 0%, #6366f1 50%, #9333ea 100%)",
+                  boxShadow: isError
+                    ? "0 4px 12px rgba(239, 68, 68, 0.25)"
+                    : "0 4px 18px rgba(99, 102, 241, 0.35)",
+                  marginTop: "1.35rem",
+                  border: isError
+                    ? "1px solid rgba(239, 68, 68, 0.35)"
+                    : "1px solid rgba(255, 255, 255, 0.15)",
+                }}
+              >
+                {isError ? (
+                  <AlertCircle size={17} color="#f87171" />
+                ) : (
+                  <span
+                    style={{
+                      fontFamily: "Outfit, sans-serif",
+                      fontWeight: 800,
+                      fontSize: "0.82rem",
+                      color: "#fff",
+                    }}
+                  >
+                    AN
+                  </span>
+                )}
               </div>
 
               {/* Message Content Bubble */}
-              <div style={{
-                maxWidth: '84%',
-                minWidth: 0,
-                overflow: 'hidden',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'flex-start',
-              }}>
-                {/* Sender Name */}
-                <span style={{
-                  fontSize: '0.7rem',
-                  color: '#6b5a60',
-                  marginBottom: '0.3rem',
-                  fontWeight: 600,
-                  paddingLeft: '0.25rem',
-                  letterSpacing: '0.3px',
-                  textTransform: 'uppercase',
-                }}>
-                  {isError ? 'Error' : 'Groq Assistant'}
+              <div
+                style={{
+                  maxWidth: "calc(100% - 46px)",
+                  minWidth: 0,
+                  overflow: "hidden",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-start",
+                }}
+              >
+                {/* Sender Title */}
+                <span
+                  style={{
+                    fontSize: "0.7rem",
+                    color: "#64748b",
+                    marginBottom: "0.35rem",
+                    fontWeight: 600,
+                    paddingLeft: "0.3rem",
+                    letterSpacing: "0.4px",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {isError ? "Error" : "AN"}
                 </span>
 
-                <div style={{
-                  background: isError 
-                    ? 'rgba(239, 68, 68, 0.08)' 
-                    : 'rgba(28, 18, 22, 0.9)',
-                  border: isError 
-                    ? '1px solid rgba(239, 68, 68, 0.25)' 
-                    : '1px solid rgba(225, 29, 72, 0.1)',
-                  borderRadius: '4px 18px 18px 18px',
-                  padding: '0.95rem 1.2rem',
-                  color: isError ? '#f87171' : '#f5f0f1',
-                  boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
-                  position: 'relative',
-                  backdropFilter: 'blur(8px)',
-                  minWidth: 0,
-                  wordBreak: 'break-word',
-                  overflowWrap: 'anywhere',
-                }}>
+                <div
+                  style={{
+                    background: isError
+                      ? "rgba(239, 68, 68, 0.08)"
+                      : "rgba(17, 24, 39, 0.88)",
+                    border: isError
+                      ? "1px solid rgba(239, 68, 68, 0.25)"
+                      : "1px solid rgba(99, 102, 241, 0.18)",
+                    borderRadius: "4px 18px 18px 18px",
+                    padding: "0.95rem 1.25rem",
+                    color: isError ? "#fca5a5" : "#f1f5f9",
+                    boxShadow: "0 4px 24px rgba(0, 0, 0, 0.35)",
+                    position: "relative",
+                    backdropFilter: "blur(12px)",
+                    WebkitBackdropFilter: "blur(12px)",
+                    minWidth: 0,
+                    width: "100%",
+                    wordBreak: "break-word",
+                    overflowWrap: "anywhere",
+                  }}
+                >
                   <div className="markdown-content">
-                    <ReactMarkdown 
+                    <ReactMarkdown
                       remarkPlugins={[remarkGfm]}
                       components={markdownComponents}
                     >
@@ -249,48 +362,51 @@ export default function ChatWindow({
                   </div>
 
                   {/* Actions Bar */}
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.4rem',
-                    marginTop: '0.7rem',
-                    paddingTop: '0.5rem',
-                    borderTop: '1px solid rgba(225, 29, 72, 0.08)',
-                  }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.4rem",
+                      marginTop: "0.75rem",
+                      paddingTop: "0.5rem",
+                      borderTop: "1px solid rgba(99, 102, 241, 0.1)",
+                    }}
+                  >
                     <button
                       onClick={() => copyMessageText(msg.content, idx)}
                       style={{
-                        background: 'transparent',
-                        border: 'none',
-                        color: '#6b5a60',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.25rem',
-                        fontSize: '0.7rem',
-                        padding: '0.22rem 0.5rem',
-                        borderRadius: '6px',
-                        transition: 'all 0.15s ease',
-                        fontFamily: 'Inter, sans-serif',
+                        background: "transparent",
+                        border: "none",
+                        color: "#64748b",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.3rem",
+                        fontSize: "0.72rem",
+                        padding: "0.25rem 0.5rem",
+                        borderRadius: "6px",
+                        transition: "all 0.15s ease",
+                        fontFamily: "Inter, sans-serif",
                       }}
                       onMouseOver={(e) => {
-                        e.currentTarget.style.background = 'rgba(225,29,72,0.08)';
-                        e.currentTarget.style.color = '#fb7185';
+                        e.currentTarget.style.background =
+                          "rgba(99, 102, 241, 0.12)";
+                        e.currentTarget.style.color = "#38bdf8";
                       }}
                       onMouseOut={(e) => {
-                        e.currentTarget.style.background = 'transparent';
-                        e.currentTarget.style.color = '#6b5a60';
+                        e.currentTarget.style.background = "transparent";
+                        e.currentTarget.style.color = "#64748b";
                       }}
-                      title="Copy message"
+                      title="Copy response"
                     >
                       {copiedIndex === idx ? (
                         <>
-                          <Check size={12} color="#10b981" />
-                          <span style={{ color: '#10b981' }}>Copied</span>
+                          <Check size={13} color="#34d399" />
+                          <span style={{ color: "#34d399" }}>Copied</span>
                         </>
                       ) : (
                         <>
-                          <Copy size={12} />
+                          <Copy size={13} />
                           <span>Copy</span>
                         </>
                       )}
@@ -300,30 +416,31 @@ export default function ChatWindow({
                       <button
                         onClick={onRegenerate}
                         style={{
-                          background: 'transparent',
-                          border: 'none',
-                          color: '#6b5a60',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.25rem',
-                          fontSize: '0.7rem',
-                          padding: '0.22rem 0.5rem',
-                          borderRadius: '6px',
-                          transition: 'all 0.15s ease',
-                          fontFamily: 'Inter, sans-serif',
+                          background: "transparent",
+                          border: "none",
+                          color: "#64748b",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "0.3rem",
+                          fontSize: "0.72rem",
+                          padding: "0.25rem 0.5rem",
+                          borderRadius: "6px",
+                          transition: "all 0.15s ease",
+                          fontFamily: "Inter, sans-serif",
                         }}
                         onMouseOver={(e) => {
-                          e.currentTarget.style.background = 'rgba(225,29,72,0.08)';
-                          e.currentTarget.style.color = '#fb7185';
+                          e.currentTarget.style.background =
+                            "rgba(99, 102, 241, 0.12)";
+                          e.currentTarget.style.color = "#c084fc";
                         }}
                         onMouseOut={(e) => {
-                          e.currentTarget.style.background = 'transparent';
-                          e.currentTarget.style.color = '#6b5a60';
+                          e.currentTarget.style.background = "transparent";
+                          e.currentTarget.style.color = "#64748b";
                         }}
                         title="Regenerate response"
                       >
-                        <RefreshCw size={12} />
+                        <RefreshCw size={13} />
                         <span>Retry</span>
                       </button>
                     )}
@@ -336,58 +453,92 @@ export default function ChatWindow({
 
         {/* Live Streaming Message Display */}
         {isGenerating && (
-          <div className="fade-in" style={{ display: 'flex', gap: '0.8rem', marginBottom: '1.6rem' }}>
-            <div style={{
-              width: '34px',
-              height: '34px',
-              borderRadius: '10px',
-              background: 'linear-gradient(135deg, #e11d48 0%, #9f1239 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-              boxShadow: '0 4px 16px rgba(225, 29, 72, 0.4)',
-              animation: 'rose-pulse 2s infinite',
-            }}>
-              <Flame size={16} color="#fff" />
+          <div
+            className="fade-in"
+            style={{
+              display: "flex",
+              gap: "0.75rem",
+              marginBottom: "1.6rem",
+              width: "100%",
+            }}
+          >
+            <div
+              style={{
+                width: "34px",
+                height: "34px",
+                borderRadius: "10px",
+                background:
+                  "linear-gradient(135deg, #2563eb 0%, #6366f1 50%, #9333ea 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                boxShadow: "0 4px 18px rgba(99, 102, 241, 0.4)",
+                animation: "gemini-pulse 2s infinite",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "Outfit, sans-serif",
+                  fontWeight: 800,
+                  fontSize: "0.82rem",
+                  color: "#fff",
+                }}
+              >
+                AN
+              </span>
             </div>
 
-            <div style={{ maxWidth: '84%', minWidth: 0, overflow: 'hidden' }}>
-              <span style={{
-                fontSize: '0.7rem',
-                color: '#6b5a60',
-                marginBottom: '0.3rem',
-                display: 'block',
-                fontWeight: 600,
-                padding: '0 0.25rem',
-                letterSpacing: '0.3px',
-                textTransform: 'uppercase',
-              }}>
-                Groq Assistant · Streaming
+            <div
+              style={{
+                maxWidth: "calc(100% - 46px)",
+                minWidth: 0,
+                width: "100%",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "0.7rem",
+                  color: "#38bdf8",
+                  marginBottom: "0.35rem",
+                  display: "block",
+                  fontWeight: 600,
+                  padding: "0 0.3rem",
+                  letterSpacing: "0.4px",
+                  textTransform: "uppercase",
+                }}
+              >
+                AN · Thinking & Streaming
               </span>
 
-              <div style={{
-                background: 'rgba(28, 18, 22, 0.9)',
-                border: '1px solid rgba(225, 29, 72, 0.2)',
-                borderRadius: '4px 18px 18px 18px',
-                padding: '0.95rem 1.2rem',
-                color: '#f5f0f1',
-                backdropFilter: 'blur(8px)',
-                boxShadow: '0 0 20px rgba(225,29,72,0.08)',
-                minWidth: 0,
-                wordBreak: 'break-word',
-                overflowWrap: 'anywhere',
-              }}>
+              <div
+                style={{
+                  background: "rgba(17, 24, 39, 0.88)",
+                  border: "1px solid rgba(99, 102, 241, 0.3)",
+                  borderRadius: "4px 18px 18px 18px",
+                  padding: "0.95rem 1.25rem",
+                  color: "#f1f5f9",
+                  backdropFilter: "blur(12px)",
+                  WebkitBackdropFilter: "blur(12px)",
+                  boxShadow: "0 0 25px rgba(99, 102, 241, 0.15)",
+                  minWidth: 0,
+                  width: "100%",
+                  wordBreak: "break-word",
+                  overflowWrap: "anywhere",
+                }}
+              >
                 <div className="markdown-content">
                   {streamingMessage ? (
-                    <ReactMarkdown 
+                    <ReactMarkdown
                       remarkPlugins={[remarkGfm]}
                       components={markdownComponents}
                     >
                       {streamingMessage}
                     </ReactMarkdown>
                   ) : (
-                    <span style={{ color: '#6b5a60', fontStyle: 'italic' }}>Thinking...</span>
+                    <span style={{ color: "#94a3b8", fontStyle: "italic" }}>
+                      Thinking...
+                    </span>
                   )}
                   <span className="typing-cursor" />
                 </div>
@@ -396,7 +547,7 @@ export default function ChatWindow({
           </div>
         )}
 
-        <div style={{ height: '2rem' }} />
+        <div style={{ height: "2rem" }} />
         <div ref={messagesEndRef} />
       </div>
 
@@ -405,28 +556,29 @@ export default function ChatWindow({
         <button
           onClick={() => scrollToBottom(true)}
           style={{
-            position: 'fixed',
-            bottom: '110px',
-            right: '28px',
-            background: 'linear-gradient(135deg, #e11d48 0%, #9f1239 100%)',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '50%',
-            width: '38px',
-            height: '38px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            boxShadow: '0 4px 18px rgba(225, 29, 72, 0.5)',
-            zIndex: 10,
-            transition: 'transform 0.15s ease',
+            position: "fixed",
+            bottom: "100px",
+            right: "24px",
+            background:
+              "linear-gradient(135deg, #2563eb 0%, #6366f1 50%, #9333ea 100%)",
+            color: "#fff",
+            border: "none",
+            borderRadius: "50%",
+            width: "40px",
+            height: "40px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            boxShadow: "0 4px 20px rgba(99, 102, 241, 0.5)",
+            zIndex: 30,
+            transition: "transform 0.15s ease",
           }}
-          onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-          onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
+          onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
           title="Scroll to Bottom"
         >
-          <ArrowDown size={16} />
+          <ArrowDown size={18} />
         </button>
       )}
     </div>

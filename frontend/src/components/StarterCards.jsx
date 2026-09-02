@@ -1,10 +1,10 @@
 import React from 'react';
-import { Flame } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 export default function StarterCards({ modelName }) {
   return (
     <div style={{
-      maxWidth: '720px',
+      maxWidth: '680px',
       width: '100%',
       margin: '0 auto',
       padding: '2rem 1.5rem',
@@ -12,68 +12,79 @@ export default function StarterCards({ modelName }) {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
+      textAlign: 'center',
     }}>
-      {/* Brand Icon */}
+      {/* Brand AN Avatar Icon */}
       <div style={{
-        width: '72px',
-        height: '72px',
-        borderRadius: '22px',
-        background: 'linear-gradient(135deg, rgba(225,29,72,0.2) 0%, rgba(159,18,57,0.15) 100%)',
-        border: '1px solid rgba(225, 29, 72, 0.35)',
+        width: '76px',
+        height: '76px',
+        borderRadius: '24px',
+        background: 'linear-gradient(135deg, #2563eb 0%, #6366f1 50%, #9333ea 100%)',
+        border: '1px solid rgba(255, 255, 255, 0.2)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: '1.75rem',
-        boxShadow: '0 8px 40px rgba(225, 29, 72, 0.25)',
+        marginBottom: '1.5rem',
+        boxShadow: '0 10px 40px rgba(99, 102, 241, 0.45)',
         position: 'relative',
       }}>
-        {/* Inner glow */}
+        {/* Ambient background glow */}
         <div style={{
           position: 'absolute',
-          inset: '-1px',
-          borderRadius: '22px',
-          background: 'radial-gradient(circle at 50% 0%, rgba(225,29,72,0.15), transparent 60%)',
+          inset: '-2px',
+          borderRadius: '26px',
+          background: 'radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.4), transparent 70%)',
           pointerEvents: 'none',
         }} />
-        <Flame size={34} color="#e11d48" />
+        <span style={{
+          fontFamily: 'Outfit, sans-serif',
+          fontWeight: 800,
+          fontSize: '1.8rem',
+          color: '#ffffff',
+          letterSpacing: '-0.5px',
+          lineHeight: 1,
+        }}>
+          AN
+        </span>
       </div>
 
+      {/* Main Greeting Heading */}
       <h2 style={{
         fontFamily: 'Outfit, sans-serif',
-        fontSize: '2.6rem',
+        fontSize: 'clamp(2rem, 5.5vw, 2.75rem)',
         fontWeight: 800,
-        background: 'linear-gradient(135deg, #ffffff 0%, #fda4af 60%, #e11d48 100%)',
+        background: 'linear-gradient(135deg, #ffffff 0%, #93c5fd 40%, #c084fc 100%)',
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent',
         backgroundClip: 'text',
-        marginBottom: '0.7rem',
+        marginBottom: '0.6rem',
         textAlign: 'center',
-        letterSpacing: '-0.8px',
-        lineHeight: 1.1,
+        letterSpacing: '-0.6px',
+        lineHeight: 1.15,
       }}>
         How can I help you today?
       </h2>
 
+      {/* Tagline */}
       <p style={{
-        color: '#a1919a',
-        fontSize: '0.97rem',
+        color: '#94a3b8',
+        fontSize: '1rem',
         textAlign: 'center',
-        maxWidth: '480px',
+        maxWidth: '460px',
         lineHeight: 1.6,
-        marginTop: '0.3rem',
+        margin: '0 auto',
       }}>
-        Powered by{' '}
-        <strong style={{ color: '#e11d48', fontWeight: 600 }}>Groq LPU Inference</strong>
-        {' '}using{' '}
-        <span style={{ color: '#fb7185', fontWeight: 600 }}>{modelName || 'GPT-OSS 120B'}</span>
+        <strong style={{ color: '#f8fafc', fontWeight: 600 }}>AN Multimodal Assistant</strong>
+        {' '}·{' '}
+        <span style={{ color: '#38bdf8', fontWeight: 500 }}>{modelName || 'Gemini 3.6 Flash'}</span>
       </p>
 
-      {/* Decorative divider */}
+      {/* Subtle Divider */}
       <div style={{
-        marginTop: '2.5rem',
-        width: '120px',
+        marginTop: '2.2rem',
+        width: '100px',
         height: '1px',
-        background: 'linear-gradient(90deg, transparent, rgba(225,29,72,0.4), transparent)',
+        background: 'linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.4), transparent)',
       }} />
     </div>
   );
