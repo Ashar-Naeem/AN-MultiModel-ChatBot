@@ -6,6 +6,7 @@ import MessageInput from "./components/MessageInput";
 import StarterCards from "./components/StarterCards";
 import SettingsModal from "./components/SettingsModal";
 import AuthModal from "./components/AuthModal";
+import { apiUrl } from "./lib/api";
 
 const DEFAULT_MODELS = [
   {
@@ -216,7 +217,7 @@ export default function App() {
       }
 
       try {
-        const res = await fetch("/api/auth/me", {
+        const res = await fetch(apiUrl("/api/auth/me"), {
           headers: {
             Authorization: `Bearer ${savedToken}`,
           },
@@ -264,7 +265,7 @@ export default function App() {
   useEffect(() => {
     async function fetchModels() {
       try {
-        const res = await fetch("/api/models");
+        const res = await fetch(apiUrl("/api/models"));
         if (res.ok) {
           const data = await res.json();
           if (data.models && data.models.length > 0) {
@@ -436,7 +437,7 @@ export default function App() {
     }, timeoutMs);
 
     try {
-      const response = await fetch("/api/chat/stream", {
+      const response = await fetch(apiUrl("/api/chat/stream"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         signal: abortControllerRef.current.signal,

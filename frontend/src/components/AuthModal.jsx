@@ -16,6 +16,7 @@ import {
   RotateCw,
   Check
 } from 'lucide-react';
+import { apiUrl } from '../lib/api';
 
 export default function AuthModal({ 
   isOpen, 
@@ -108,7 +109,7 @@ export default function AuthModal({
     if (isLogin) {
       setIsLoading(true);
       try {
-        const res = await fetch('/api/auth/login', {
+        const res = await fetch(apiUrl('/api/auth/login'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: email.trim(), password })
@@ -139,7 +140,7 @@ export default function AuthModal({
     // Sign Up Flow: Send OTP to Google / Email Account
     setIsLoading(true);
     try {
-      const res = await fetch('/api/auth/send-otp', {
+      const res = await fetch(apiUrl('/api/auth/send-otp'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim(), purpose: 'signup' })
@@ -230,7 +231,7 @@ export default function AuthModal({
 
     setIsLoading(true);
     try {
-      const res = await fetch('/api/auth/signup', {
+      const res = await fetch(apiUrl('/api/auth/signup'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -270,7 +271,7 @@ export default function AuthModal({
     setSuccessMsg('');
 
     try {
-      const res = await fetch('/api/auth/send-otp', {
+      const res = await fetch(apiUrl('/api/auth/send-otp'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim(), purpose: 'signup' })
