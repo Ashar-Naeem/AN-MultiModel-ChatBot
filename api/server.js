@@ -37,7 +37,22 @@ if (MONGODB_URI) {
 }
 
 // Authentication Routes
-app.use(["/api/auth", "/auth"], authRoutes);
+app.use(
+  ["/api/auth", "/auth"],
+  async (req, res, next) => {
+    await mongoConnectionPromise;
+
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        error: "Database is temporarily unavailable. Please try again shortly.",
+        databaseError: mongoConnectionError,
+      });
+    }
+
+    next();
+  },
+  authRoutes,
+);
 
 // Health check endpoint
 app.get(["/api/health", "/health"], async (req, res) => {
