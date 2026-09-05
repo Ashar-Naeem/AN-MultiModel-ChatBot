@@ -7,6 +7,8 @@
     "server": "node server.js",
     "client": "npm run dev --prefix frontend",
     "dev": "node server.js",
+    "start": "node server.js",
+    "build": "npm install --prefix frontend && npm run build --prefix frontend",
     "build:frontend": "npm run build --prefix frontend"
   },
   "keywords": [],

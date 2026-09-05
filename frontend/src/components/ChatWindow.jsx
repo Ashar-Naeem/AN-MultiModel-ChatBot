@@ -72,7 +72,15 @@ export default function ChatWindow({
   const [showScrollBottom, setShowScrollBottom] = useState(false);
   const messagesEndRef = useRef(null);
   const containerRef = useRef(null);
-  const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== "undefined" && window.innerWidth <= 768,
+  );
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Auto-scroll to bottom when messages or streaming updates
   const scrollToBottom = (smooth = true) => {
@@ -123,7 +131,7 @@ export default function ChatWindow({
         overflowY: "auto",
         overflowX: "hidden",
         padding: isMobile
-          ? "1rem 0.7rem 2.5rem 0.7rem"
+          ? "0.85rem 0.55rem 2rem 0.55rem"
           : "1.5rem 1rem 3rem 1rem",
         position: "relative",
         WebkitOverflowScrolling: "touch",
@@ -174,9 +182,9 @@ export default function ChatWindow({
                       "linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #6366f1 100%)",
                     border: "1px solid rgba(255, 255, 255, 0.15)",
                     borderRadius: "18px 18px 4px 18px",
-                    padding: "0.85rem 1.2rem",
+                    padding: isMobile ? "0.75rem 0.95rem" : "0.85rem 1.2rem",
                     color: "#ffffff",
-                    maxWidth: isMobile ? "100%" : "85%",
+                    maxWidth: isMobile ? "92%" : "85%",
                     boxShadow: "0 4px 22px rgba(37, 99, 235, 0.28)",
                     wordBreak: "break-word",
                     display: "flex",
@@ -190,7 +198,7 @@ export default function ChatWindow({
                       style={{
                         borderRadius: "12px",
                         overflow: "hidden",
-                        maxHeight: "280px",
+                        maxHeight: isMobile ? "220px" : "280px",
                         maxWidth: "100%",
                         background: "rgba(0,0,0,0.3)",
                       }}
@@ -200,7 +208,7 @@ export default function ChatWindow({
                         alt="User attached image"
                         style={{
                           width: "100%",
-                          maxHeight: "280px",
+                          maxHeight: isMobile ? "220px" : "280px",
                           objectFit: "contain",
                           display: "block",
                           borderRadius: "10px",
@@ -226,7 +234,7 @@ export default function ChatWindow({
                             src={med.data || med}
                             alt="Attached media"
                             style={{
-                              maxHeight: "200px",
+                              maxHeight: isMobile ? "160px" : "200px",
                               maxWidth: "100%",
                               objectFit: "contain",
                               borderRadius: "10px",
@@ -261,8 +269,8 @@ export default function ChatWindow({
               className="fade-in"
               style={{
                 display: "flex",
-                gap: "0.75rem",
-                marginBottom: "1.6rem",
+                gap: isMobile ? "0.5rem" : "0.75rem",
+                marginBottom: isMobile ? "1.2rem" : "1.6rem",
                 alignItems: "flex-start",
                 width: "100%",
               }}
@@ -270,9 +278,9 @@ export default function ChatWindow({
               {/* AN Avatar */}
               <div
                 style={{
-                  width: "34px",
-                  height: "34px",
-                  borderRadius: "10px",
+                  width: isMobile ? "28px" : "34px",
+                  height: isMobile ? "28px" : "34px",
+                  borderRadius: isMobile ? "8px" : "10px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -283,20 +291,20 @@ export default function ChatWindow({
                   boxShadow: isError
                     ? "0 4px 12px rgba(239, 68, 68, 0.25)"
                     : "0 4px 18px rgba(99, 102, 241, 0.35)",
-                  marginTop: "1.35rem",
+                  marginTop: isMobile ? "0.95rem" : "1.35rem",
                   border: isError
                     ? "1px solid rgba(239, 68, 68, 0.35)"
                     : "1px solid rgba(255, 255, 255, 0.15)",
                 }}
               >
                 {isError ? (
-                  <AlertCircle size={17} color="#f87171" />
+                  <AlertCircle size={isMobile ? 14 : 17} color="#f87171" />
                 ) : (
                   <span
                     style={{
                       fontFamily: "Outfit, sans-serif",
                       fontWeight: 800,
-                      fontSize: "0.82rem",
+                      fontSize: isMobile ? "0.74rem" : "0.82rem",
                       color: "#fff",
                     }}
                   >
@@ -308,12 +316,13 @@ export default function ChatWindow({
               {/* Message Content Bubble */}
               <div
                 style={{
-                  maxWidth: "calc(100% - 46px)",
+                  maxWidth: isMobile ? "calc(100% - 36px)" : "calc(100% - 46px)",
                   minWidth: 0,
                   overflow: "hidden",
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "flex-start",
+                  width: "100%",
                 }}
               >
                 {/* Sender Title */}
@@ -340,7 +349,7 @@ export default function ChatWindow({
                       ? "1px solid rgba(239, 68, 68, 0.25)"
                       : "1px solid rgba(99, 102, 241, 0.18)",
                     borderRadius: "4px 18px 18px 18px",
-                    padding: "0.95rem 1.25rem",
+                    padding: isMobile ? "0.8rem 0.95rem" : "0.95rem 1.25rem",
                     color: isError ? "#fca5a5" : "#f1f5f9",
                     boxShadow: "0 4px 24px rgba(0, 0, 0, 0.35)",
                     position: "relative",
@@ -457,16 +466,16 @@ export default function ChatWindow({
             className="fade-in"
             style={{
               display: "flex",
-              gap: "0.75rem",
-              marginBottom: "1.6rem",
+              gap: isMobile ? "0.5rem" : "0.75rem",
+              marginBottom: isMobile ? "1.2rem" : "1.6rem",
               width: "100%",
             }}
           >
             <div
               style={{
-                width: "34px",
-                height: "34px",
-                borderRadius: "10px",
+                width: isMobile ? "28px" : "34px",
+                height: isMobile ? "28px" : "34px",
+                borderRadius: isMobile ? "8px" : "10px",
                 background:
                   "linear-gradient(135deg, #2563eb 0%, #6366f1 50%, #9333ea 100%)",
                 display: "flex",
@@ -475,13 +484,14 @@ export default function ChatWindow({
                 flexShrink: 0,
                 boxShadow: "0 4px 18px rgba(99, 102, 241, 0.4)",
                 animation: "gemini-pulse 2s infinite",
+                marginTop: isMobile ? "0.95rem" : "1.35rem",
               }}
             >
               <span
                 style={{
                   fontFamily: "Outfit, sans-serif",
                   fontWeight: 800,
-                  fontSize: "0.82rem",
+                  fontSize: isMobile ? "0.74rem" : "0.82rem",
                   color: "#fff",
                 }}
               >
@@ -491,7 +501,7 @@ export default function ChatWindow({
 
             <div
               style={{
-                maxWidth: "calc(100% - 46px)",
+                maxWidth: isMobile ? "calc(100% - 36px)" : "calc(100% - 46px)",
                 minWidth: 0,
                 width: "100%",
               }}
@@ -516,7 +526,7 @@ export default function ChatWindow({
                   background: "rgba(17, 24, 39, 0.88)",
                   border: "1px solid rgba(99, 102, 241, 0.3)",
                   borderRadius: "4px 18px 18px 18px",
-                  padding: "0.95rem 1.25rem",
+                  padding: isMobile ? "0.8rem 0.95rem" : "0.95rem 1.25rem",
                   color: "#f1f5f9",
                   backdropFilter: "blur(12px)",
                   WebkitBackdropFilter: "blur(12px)",
@@ -557,15 +567,15 @@ export default function ChatWindow({
           onClick={() => scrollToBottom(true)}
           style={{
             position: "fixed",
-            bottom: "100px",
-            right: "24px",
+            bottom: isMobile ? "80px" : "100px",
+            right: isMobile ? "16px" : "24px",
             background:
               "linear-gradient(135deg, #2563eb 0%, #6366f1 50%, #9333ea 100%)",
             color: "#fff",
             border: "none",
             borderRadius: "50%",
-            width: "40px",
-            height: "40px",
+            width: isMobile ? "36px" : "40px",
+            height: isMobile ? "36px" : "40px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -577,8 +587,9 @@ export default function ChatWindow({
           onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
           onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
           title="Scroll to Bottom"
+          aria-label="Scroll to Bottom"
         >
-          <ArrowDown size={18} />
+          <ArrowDown size={isMobile ? 16 : 18} />
         </button>
       )}
     </div>

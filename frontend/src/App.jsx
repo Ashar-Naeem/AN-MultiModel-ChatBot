@@ -9,41 +9,62 @@ import AuthModal from "./components/AuthModal";
 
 const DEFAULT_MODELS = [
   {
-    id: "gemini-2.0-flash",
-    name: "Gemini 2.0 Flash",
-    description: "Fastest balanced option for quick, responsive chat responses",
+    id: "qwen/qwen3.8-27b",
+    name: "Qwen 3.8 27B",
+    tag: "⚡ Ultra Fast",
+    description: "Ultra-fast inference on Groq LPUs with superior reasoning & coding",
+    provider: "groq",
+  },
+  {
+    id: "gemini-3.5-flash-lite",
+    name: "Gemini 3.5 Flash Lite",
+    tag: "⚡ Fast Gemini",
+    description: "Ultra-compact Google Gemini model with ~1s initial response",
+    provider: "gemini",
   },
   {
     id: "gemini-3.6-flash",
     name: "Gemini 3.6 Flash",
+    tag: "🧠 Deep Thinking",
     description:
-      "Google's flagship multimodal model with ultra-fast inference & reasoning",
+      "Google's flagship multimodal model with deep thinking capabilities",
+    provider: "gemini",
   },
   {
-    id: "gemini-flash-latest",
-    name: "Gemini Flash (Latest)",
-    description: "Production-grade high-speed intelligence for coding and chat",
+    id: "qwen/qwen3.6-27b",
+    name: "Qwen 3.6 27B",
+    tag: "⚡ Fast",
+    description: "High-speed balanced Groq model for conversational intelligence",
+    provider: "groq",
+  },
+  {
+    id: "openai/gpt-oss-120b",
+    name: "GPT OSS 120B",
+    tag: "🧠 120B Reasoning",
+    description: "State-of-the-art 120B reasoning model hosted on Groq hardware",
+    provider: "groq",
+  },
+  {
+    id: "openai/gpt-oss-20b",
+    name: "GPT OSS 20B",
+    tag: "⚡ Ultra Fast",
+    description: "Ultra-responsive Groq model for swift query answers",
+    provider: "groq",
+  },
+  {
+    id: "groq/compound",
+    name: "Groq Compound",
+    tag: "⚡ Multi-Agent",
+    description: "Fast multi-agent compound system on Groq LPUs",
+    provider: "groq",
   },
   {
     id: "gemini-pro-latest",
     name: "Gemini Pro (Latest)",
+    tag: "🧠 Multimodal Logic",
     description:
       "State-of-the-art model for complex logic, math, and code generation",
-  },
-  {
-    id: "gemini-3-flash-preview",
-    name: "Gemini 3 Flash Preview",
-    description: "Next-gen experimental fast model with high-context abilities",
-  },
-  {
-    id: "gemini-3.1-pro-preview",
-    name: "Gemini 3.1 Pro Preview",
-    description: "Deep thinking and complex multimodal problem solving",
-  },
-  {
-    id: "gemini-3.1-flash-lite",
-    name: "Gemini 3.1 Flash Lite",
-    description: "Ultra-compact and responsive lightweight Gemini model",
+    provider: "gemini",
   },
 ];
 
@@ -114,9 +135,9 @@ export default function App() {
   const [models, setModels] = useState(DEFAULT_MODELS);
   const [selectedModel, setSelectedModel] = useState(() => {
     const saved = localStorage.getItem("an_studio_model");
-    return saved && DEFAULT_MODELS.some((m) => m.id === saved)
+    return saved && saved !== "gemini-2.0-flash" && DEFAULT_MODELS.some((m) => m.id === saved)
       ? saved
-      : "gemini-2.0-flash";
+      : "qwen/qwen3.8-27b";
   });
 
   const [systemPrompt, setSystemPrompt] = useState(() => {
@@ -248,6 +269,12 @@ export default function App() {
           const data = await res.json();
           if (data.models && data.models.length > 0) {
             setModels(data.models);
+            setSelectedModel((prev) => {
+              if (prev && prev !== "gemini-2.0-flash" && data.models.some((m) => m.id === prev)) {
+                return prev;
+              }
+              return data.models[0].id;
+            });
           }
         }
       } catch (err) {

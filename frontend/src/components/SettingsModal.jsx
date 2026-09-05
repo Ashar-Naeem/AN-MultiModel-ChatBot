@@ -364,10 +364,10 @@ export default function SettingsModal({
                   color: "#34d399",
                 }}
               >
-                AN Powered by Google Gemini API
+                AN Powered by Groq & Google Gemini AI
               </div>
               <div style={{ fontSize: "0.72rem", color: "#94a3b8" }}>
-                Full Multimodal Image & Text Intelligence Enabled
+                Auto-Failover High Availability & Multimodal Intelligence Enabled
               </div>
             </div>
           </div>

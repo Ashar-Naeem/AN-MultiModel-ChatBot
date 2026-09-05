@@ -25,11 +25,11 @@ export default function UserProfileMenu({ user, onLogout, onOpenAuthModal }) {
           border: '1px solid rgba(99, 102, 241, 0.4)',
           color: '#f8fafc',
           cursor: 'pointer',
-          padding: '0.4rem 0.85rem',
+          padding: '0.4rem 0.65rem',
           borderRadius: '10px',
           display: 'flex',
           alignItems: 'center',
-          gap: '0.45rem',
+          gap: '0.4rem',
           fontSize: '0.82rem',
           fontWeight: 600,
           fontFamily: 'Outfit, sans-serif',
@@ -47,9 +47,10 @@ export default function UserProfileMenu({ user, onLogout, onOpenAuthModal }) {
           e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.4)';
           e.currentTarget.style.boxShadow = '0 2px 10px rgba(99, 102, 241, 0.2)';
         }}
+        title="Sign In / Register"
       >
         <User size={15} color="#38bdf8" />
-        <span>Sign In</span>
+        <span className="hide-on-compact">Sign In</span>
       </button>
     );
   }
@@ -73,10 +74,10 @@ export default function UserProfileMenu({ user, onLogout, onOpenAuthModal }) {
           background: 'rgba(15, 23, 42, 0.7)',
           border: '1px solid rgba(99, 102, 241, 0.3)',
           borderRadius: '11px',
-          padding: '0.3rem 0.55rem',
+          padding: '0.3rem 0.45rem',
           display: 'flex',
           alignItems: 'center',
-          gap: '0.5rem',
+          gap: '0.4rem',
           cursor: 'pointer',
           transition: 'all 0.15s ease',
           outline: 'none',
@@ -89,6 +90,7 @@ export default function UserProfileMenu({ user, onLogout, onOpenAuthModal }) {
           e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.3)';
           e.currentTarget.style.background = 'rgba(15, 23, 42, 0.7)';
         }}
+        title={user.name || "User Profile"}
       >
         {/* Avatar Bubble */}
         <div style={{
@@ -108,21 +110,24 @@ export default function UserProfileMenu({ user, onLogout, onOpenAuthModal }) {
           {getInitials(user.name)}
         </div>
 
-        {/* User Name Preview */}
-        <span style={{
-          color: '#f8fafc',
-          fontSize: '0.84rem',
-          fontWeight: 600,
-          fontFamily: 'Outfit, sans-serif',
-          maxWidth: '100px',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-        }}>
+        {/* User Name Preview (Hidden on mobile) */}
+        <span
+          className="hide-on-mobile"
+          style={{
+            color: '#f8fafc',
+            fontSize: '0.84rem',
+            fontWeight: 600,
+            fontFamily: 'Outfit, sans-serif',
+            maxWidth: '100px',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
           {user.name || 'User'}
         </span>
 
-        <ChevronDown size={14} color="#94a3b8" />
+        <ChevronDown size={13} color="#94a3b8" />
       </button>
 
       {/* Dropdown Menu */}

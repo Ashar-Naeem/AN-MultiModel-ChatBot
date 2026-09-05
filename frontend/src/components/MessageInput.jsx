@@ -10,7 +10,15 @@ export default function MessageInput({
   const [selectedMedia, setSelectedMedia] = useState([]);
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
-  const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== "undefined" && window.innerWidth <= 768,
+  );
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Auto resize textarea height based on content
   useEffect(() => {
@@ -113,9 +121,9 @@ export default function MessageInput({
     <div
       style={{
         padding: isMobile
-          ? "0.6rem 0.65rem 0.7rem 0.65rem"
+          ? "0.45rem 0.55rem calc(0.55rem + env(safe-area-inset-bottom, 0px)) 0.55rem"
           : "0.75rem 1rem 0.85rem 1rem",
-        background: "rgba(9, 13, 22, 0.95)",
+        background: "rgba(9, 13, 22, 0.96)",
         borderTop: "1px solid rgba(99, 102, 241, 0.15)",
         position: "relative",
         zIndex: 10,
@@ -297,7 +305,7 @@ export default function MessageInput({
               background: "transparent",
               border: "none",
               color: "#f8fafc",
-              fontSize: isMobile ? "0.88rem" : "0.94rem",
+              fontSize: isMobile ? "16px" : "0.94rem",
               fontFamily: "Inter, sans-serif",
               resize: "none",
               outline: "none",
@@ -312,8 +320,8 @@ export default function MessageInput({
             <button
               onClick={onStopGeneration}
               style={{
-                width: "38px",
-                height: "38px",
+                width: isMobile ? "40px" : "38px",
+                height: isMobile ? "40px" : "38px",
                 borderRadius: "10px",
                 background: "rgba(239, 68, 68, 0.15)",
                 border: "1px solid rgba(239, 68, 68, 0.4)",
@@ -343,8 +351,8 @@ export default function MessageInput({
               onClick={submit}
               disabled={!canSubmit}
               style={{
-                width: "38px",
-                height: "38px",
+                width: isMobile ? "40px" : "38px",
+                height: isMobile ? "40px" : "38px",
                 borderRadius: "10px",
                 background: canSubmit
                   ? "linear-gradient(135deg, #2563eb 0%, #4f46e5 50%, #9333ea 100%)"
@@ -385,49 +393,72 @@ export default function MessageInput({
         </div>
 
         {/* Footer info row */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginTop: "0.45rem",
-            padding: "0 0.35rem",
-            fontSize: "0.72rem",
-            color: "#64748b",
-            flexWrap: "wrap",
-            gap: "0.2rem",
-          }}
-        >
-          <span
+        {isMobile ? (
+          <div
             style={{
               display: "flex",
+              justifyContent: "center",
               alignItems: "center",
+              marginTop: "0.3rem",
+              padding: "0 0.2rem",
+              fontSize: "0.68rem",
+              color: "#64748b",
               gap: "0.3rem",
-              color: "#94a3b8",
-              fontWeight: 500,
             }}
           >
-            <Sparkles size={12} color="#38bdf8" />
-            AN Multimodal AI
-          </span>
-
-          <span style={{ fontWeight: 500, color: "#94a3b8" }}>
-            Developed by{" "}
-            <span style={{ color: "#38bdf8", fontWeight: 600 }}>
-              Ashar Naeem
+            <Sparkles size={11} color="#38bdf8" />
+            <span>
+              AN AI · Developed by{" "}
+              <strong style={{ color: "#38bdf8", fontWeight: 600 }}>
+                Ashar Naeem
+              </strong>
             </span>
-          </span>
-
-          <span
-            style={{ minWidth: "40px", textAlign: "right", color: "#64748b" }}
+          </div>
+        ) : (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginTop: "0.45rem",
+              padding: "0 0.35rem",
+              fontSize: "0.72rem",
+              color: "#64748b",
+              flexWrap: "wrap",
+              gap: "0.2rem",
+            }}
           >
-            {selectedMedia.length > 0
-              ? `${selectedMedia.length} image${selectedMedia.length > 1 ? "s" : ""}`
-              : input.length > 0
-                ? `${input.length}c`
-                : ""}
-          </span>
-        </div>
+            <span
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.3rem",
+                color: "#94a3b8",
+                fontWeight: 500,
+              }}
+            >
+              <Sparkles size={12} color="#38bdf8" />
+              AN Multimodal AI
+            </span>
+
+            <span style={{ fontWeight: 500, color: "#94a3b8" }}>
+              Developed by{" "}
+              <span style={{ color: "#38bdf8", fontWeight: 600 }}>
+                Ashar Naeem
+              </span>
+            </span>
+
+            <span
+              style={{ minWidth: "40px", textAlign: "right", color: "#64748b" }}
+            >
+              {selectedMedia.length > 0
+                ? `${selectedMedia.length} image${selectedMedia.length > 1 ? "s" : ""}`
+                : input.length > 0
+                  ? `${input.length}c`
+                  : ""}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

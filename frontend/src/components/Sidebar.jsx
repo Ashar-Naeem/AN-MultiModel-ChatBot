@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Plus,
   MessageSquare,
@@ -32,7 +32,15 @@ export default function Sidebar({
   const [searchTerm, setSearchTerm] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [editingTitle, setEditingTitle] = useState("");
-  const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== "undefined" && window.innerWidth <= 768,
+  );
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const filteredChats = chats.filter((chat) =>
     chat.title.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -74,16 +82,16 @@ export default function Sidebar({
   return (
     <>
       {/* Mobile Backdrop Overlay */}
-      {isOpen && (
+      {isOpen && isMobile && (
         <div
           onClick={onToggleSidebar}
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(5, 8, 15, 0.75)",
-            zIndex: 40,
-            backdropFilter: "blur(6px)",
-            WebkitBackdropFilter: "blur(6px)",
+            background: "rgba(5, 8, 15, 0.8)",
+            zIndex: 55,
+            backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
             display: "block",
           }}
           className="mobile-backdrop"
@@ -93,9 +101,9 @@ export default function Sidebar({
       {/* Sidebar Container */}
       <aside
         style={{
-          width: isOpen ? (isMobile ? "85vw" : "280px") : "0",
-          minWidth: isOpen ? (isMobile ? "85vw" : "280px") : "0",
-          maxWidth: isMobile ? "85vw" : "280px",
+          width: isOpen ? (isMobile ? "min(310px, 86vw)" : "280px") : "0",
+          minWidth: isOpen ? (isMobile ? "min(310px, 86vw)" : "280px") : "0",
+          maxWidth: isMobile ? "min(310px, 86vw)" : "280px",
           overflow: "hidden",
           height: "100%",
           height: "100dvh",
@@ -109,10 +117,12 @@ export default function Sidebar({
           top: 0,
           left: 0,
           bottom: 0,
-          zIndex: 50,
+          zIndex: 60,
           flexShrink: 0,
           boxShadow:
-            isOpen && isMobile ? "0 0 40px rgba(0, 0, 0, 0.8)" : "none",
+            isOpen && isMobile ? "0 0 50px rgba(0, 0, 0, 0.85)" : "none",
+          paddingTop: isMobile ? "env(safe-area-inset-top, 0px)" : 0,
+          paddingBottom: isMobile ? "env(safe-area-inset-bottom, 0px)" : 0,
         }}
       >
         {/* Top ambient glow */}

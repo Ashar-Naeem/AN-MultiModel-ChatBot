@@ -1,1 +1,27 @@
+# Environment variables (never commit secrets)
 .env
+.env.local
+.env.*.local
+
+# Node modules
+node_modules/
+frontend/node_modules/
+
+# Build output
+frontend/dist/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor directories
+.vscode/
+.cursor/
+.idea/
+
+# Vercel
+.vercel/

@@ -36,8 +36,17 @@ export default function AuthModal({
   const [resendTimer, setResendTimer] = useState(0);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== 'undefined' && window.innerWidth <= 768
+  );
 
   const otpInputRefs = useRef([]);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Reset when opened or mode changed
   useEffect(() => {
@@ -310,7 +319,7 @@ export default function AuthModal({
           borderRadius: '24px',
           border: '1px solid rgba(99, 102, 241, 0.3)',
           boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.85), 0 0 50px rgba(99, 102, 241, 0.2)',
-          padding: '2.2rem 2rem',
+          padding: isMobile ? '1.5rem 1.1rem' : '2.2rem 2rem',
           position: 'relative',
           overflow: 'hidden'
         }}
@@ -671,7 +680,7 @@ export default function AuthModal({
             <div style={{
               display: 'flex',
               justifyContent: 'center',
-              gap: '0.5rem',
+              gap: isMobile ? '0.35rem' : '0.5rem',
               margin: '1.25rem 0'
             }}>
               {otpDigits.map((digit, index) => (
@@ -685,17 +694,17 @@ export default function AuthModal({
                   onChange={(e) => handleOtpChange(index, e.target.value)}
                   onKeyDown={(e) => handleOtpKeyDown(index, e)}
                   style={{
-                    width: '46px',
-                    height: '52px',
+                    width: isMobile ? '38px' : '46px',
+                    height: isMobile ? '46px' : '52px',
                     textAlign: 'center',
-                    fontSize: '1.4rem',
+                    fontSize: isMobile ? '1.2rem' : '1.4rem',
                     fontWeight: 700,
                     fontFamily: 'Outfit, monospace',
                     background: 'rgba(15, 23, 42, 0.9)',
                     border: digit 
                       ? '2px solid #38bdf8' 
                       : '1px solid rgba(99, 102, 241, 0.3)',
-                    borderRadius: '12px',
+                    borderRadius: isMobile ? '10px' : '12px',
                     color: '#38bdf8',
                     outline: 'none',
                     boxShadow: digit ? '0 0 12px rgba(56, 189, 248, 0.25)' : 'none',

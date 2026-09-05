@@ -8,8 +8,8 @@ const path = require("path");
 
 dotenv.config();
 
-const authRoutes = require("./routes/auth");
-const { isEmailConfigured } = require("./services/emailService");
+const authRoutes = require("../routes/auth");
+const { isEmailConfigured } = require("../services/emailService");
 
 const app = express();
 app.use(cors());
@@ -31,10 +31,10 @@ if (MONGODB_URI) {
 }
 
 // Authentication Routes
-app.use("/api/auth", authRoutes);
+app.use(["/api/auth", "/auth"], authRoutes);
 
 // Health check endpoint
-app.get("/api/health", (req, res) => {
+app.get(["/api/health", "/health"], (req, res) => {
   res.json({
     status: "ok",
     mongoDbConnected: mongoose.connection.readyState === 1,
@@ -45,9 +45,6 @@ app.get("/api/health", (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
-
-// Serve static frontend files
-app.use(express.static(path.join(__dirname, "frontend/dist")));
 
 // Initialize Providers
 const geminiApiKey = process.env.GEMINI_API_KEY || "";
@@ -146,12 +143,10 @@ function buildGeminiContents(messages) {
       m.role === "assistant" || m.role === "model" ? "model" : "user";
     const parts = [];
 
-    // Add text part if available
     if (m.content && m.content.trim() !== "") {
       parts.push({ text: m.content });
     }
 
-    // Add single image if present
     if (m.image) {
       if (typeof m.image === "string") {
         const match = m.image.match(/^data:([^;]+);base64,(.+)$/);
@@ -177,7 +172,6 @@ function buildGeminiContents(messages) {
       }
     }
 
-    // Add multiple media items if present
     if (Array.isArray(m.media)) {
       m.media.forEach((med) => {
         if (typeof med === "string") {
@@ -263,7 +257,6 @@ function getExecutionPlan(requestedModel) {
   const plan = [];
 
   if (isGroqModel(requestedModel)) {
-    // Primary: Groq requested model
     if (groq) {
       plan.push({ provider: "groq", model: requestedModel || GROQ_MODEL });
       if (GROQ_MODEL_FAST && GROQ_MODEL_FAST !== requestedModel) {
@@ -276,13 +269,11 @@ function getExecutionPlan(requestedModel) {
         plan.push({ provider: "groq", model: "qwen/qwen3.8-27b" });
       }
     }
-    // Seamless Fallback to Gemini
     if (genAI) {
       plan.push({ provider: "gemini", model: GEMINI_DEFAULT_MODEL });
       plan.push({ provider: "gemini", model: "gemini-3.6-flash" });
     }
   } else {
-    // Primary: Gemini requested model
     if (genAI) {
       plan.push({ provider: "gemini", model: requestedModel || GEMINI_DEFAULT_MODEL });
       if (requestedModel !== GEMINI_DEFAULT_MODEL) {
@@ -290,7 +281,6 @@ function getExecutionPlan(requestedModel) {
       }
       plan.push({ provider: "gemini", model: "gemini-3.6-flash" });
     }
-    // Seamless Fallback to Groq
     if (groq) {
       plan.push({ provider: "groq", model: GROQ_MODEL });
       if (GROQ_MODEL_FAST && GROQ_MODEL_FAST !== GROQ_MODEL) {
@@ -300,7 +290,6 @@ function getExecutionPlan(requestedModel) {
     }
   }
 
-  // Deduplicate entries
   const uniquePlan = [];
   const seen = new Set();
   for (const item of plan) {
@@ -447,7 +436,7 @@ async function* streamGemini(
 }
 
 // Get Available Models endpoint
-app.get("/api/models", async (req, res) => {
+app.get(["/api/models", "/models"], async (req, res) => {
   try {
     let availableGroqModels = [];
     if (groq) {
@@ -566,7 +555,7 @@ app.get("/api/models", async (req, res) => {
 });
 
 // Chat endpoint (Standard Response with Auto-Failover)
-app.post("/api/chat", async (req, res) => {
+app.post(["/api/chat", "/chat"], async (req, res) => {
   try {
     const {
       messages,
@@ -611,7 +600,7 @@ app.post("/api/chat", async (req, res) => {
         }
       } catch (error) {
         console.warn(
-          `[Chat Auto-Failover] ${step.provider} (${step.model}) failed: ${error.message}. Automatically shifting to next alternative without showing error to user...`,
+          `[Chat Auto-Failover] ${step.provider} (${step.model}) failed: ${error.message}. Automatically shifting to next alternative...`,
         );
         lastError = error;
       }
@@ -634,7 +623,7 @@ app.post("/api/chat", async (req, res) => {
 });
 
 // Streaming endpoint (Real-time SSE response with Seamless Auto-Failover)
-app.post("/api/chat/stream", async (req, res) => {
+app.post(["/api/chat/stream", "/chat/stream"], async (req, res) => {
   const {
     messages,
     model = GROQ_MODEL,
@@ -694,7 +683,6 @@ app.post("/api/chat/stream", async (req, res) => {
         );
         lastError = err;
         if (streamStarted) {
-          // Stream already yielded content to the user, stop to prevent broken concatenation
           break;
         }
         console.warn(
@@ -733,14 +721,5 @@ app.post("/api/chat/stream", async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`AN AI Studio Server running on port ${PORT}`);
-  if (!isEmailConfigured()) {
-    console.warn(
-      "OTP emails will fail until EMAIL_USER and EMAIL_PASS (Gmail App Password) are set in .env",
-    );
-  } else {
-    console.log("OTP email delivery is configured");
-  }
-});
+// Export for Vercel serverless
+module.exports = app;
