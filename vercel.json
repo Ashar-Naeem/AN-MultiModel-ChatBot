@@ -1,16 +1,10 @@
 {
   "version": 2,
-  "buildCommand": "npm install --prefix frontend && npm run build --prefix frontend",
-  "outputDirectory": "frontend/dist",
-  "installCommand": "npm install",
-  "rewrites": [
-    { "source": "/api/:path*", "destination": "/api/server" },
-    { "source": "/((?!api).*)", "destination": "/index.html" }
-  ],
-  "functions": {
-    "api/server.js": {
-      "maxDuration": 60,
-      "memory": 512
+  "builds": [
+    {
+      "src": "api/server.js",
+      "use": "@vercel/node"
     }
-  }
+  ],
+  "routes": [{ "src": "/(.*)", "dest": "/api/server.js" }]
 }
