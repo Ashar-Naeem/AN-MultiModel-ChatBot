@@ -11,6 +11,9 @@
     "build": "npm install --prefix frontend && npm run build --prefix frontend",
     "build:frontend": "npm run build --prefix frontend"
   },
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
