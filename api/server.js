@@ -19,14 +19,20 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 // MongoDB Connection
 const MONGODB_URI = process.env.MONGODB_URI;
+let mongoConnectionError = null;
+let mongoConnectionPromise = Promise.resolve();
 if (MONGODB_URI) {
-  mongoose
-    .connect(MONGODB_URI)
+  mongoConnectionPromise = mongoose
+    .connect(MONGODB_URI, { serverSelectionTimeoutMS: 10000 })
     .then(() =>
       console.log("✓ MongoDB Connected successfully to ANchatbot cluster"),
     )
-    .catch((err) => console.error("✗ MongoDB Connection Error:", err.message));
+    .catch((err) => {
+      mongoConnectionError = err.message;
+      console.error("✗ MongoDB Connection Error:", err.message);
+    });
 } else {
+  mongoConnectionError = "MONGODB_URI is not configured";
   console.warn("! MONGODB_URI not found in environment variables");
 }
 
@@ -34,10 +40,16 @@ if (MONGODB_URI) {
 app.use(["/api/auth", "/auth"], authRoutes);
 
 // Health check endpoint
-app.get(["/api/health", "/health"], (req, res) => {
+app.get(["/api/health", "/health"], async (req, res) => {
+  await mongoConnectionPromise;
   res.json({
     status: "ok",
     mongoDbConnected: mongoose.connection.readyState === 1,
+    mongoDbState:
+      ["disconnected", "connected", "connecting", "disconnecting"][
+        mongoose.connection.readyState
+      ] || "unknown",
+    mongoDbError: mongoConnectionError,
     emailConfigured: isEmailConfigured(),
     groqConfigured: Boolean(process.env.GROQ_API_KEY),
     geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
@@ -63,7 +75,8 @@ const CURATED_MODELS = [
     id: "qwen/qwen3.8-27b",
     name: "Qwen 3.8 27B",
     tag: "⚡ Ultra Fast",
-    description: "Ultra-fast inference on Groq LPUs with superior reasoning & coding",
+    description:
+      "Ultra-fast inference on Groq LPUs with superior reasoning & coding",
     provider: "groq",
   },
   {
@@ -77,21 +90,24 @@ const CURATED_MODELS = [
     id: "gemini-3.6-flash",
     name: "Gemini 3.6 Flash",
     tag: "🧠 Deep Thinking",
-    description: "Google's flagship multimodal model with deep thinking capabilities",
+    description:
+      "Google's flagship multimodal model with deep thinking capabilities",
     provider: "gemini",
   },
   {
     id: "qwen/qwen3.6-27b",
     name: "Qwen 3.6 27B",
     tag: "⚡ Fast",
-    description: "High-speed balanced Groq model for conversational intelligence",
+    description:
+      "High-speed balanced Groq model for conversational intelligence",
     provider: "groq",
   },
   {
     id: "openai/gpt-oss-120b",
     name: "GPT OSS 120B",
     tag: "🧠 120B Reasoning",
-    description: "State-of-the-art 120B reasoning model hosted on Groq hardware",
+    description:
+      "State-of-the-art 120B reasoning model hosted on Groq hardware",
     provider: "groq",
   },
   {
@@ -207,7 +223,11 @@ function buildGeminiContents(messages) {
 function buildGroqMessages(messages, systemPrompt) {
   const groqMessages = [];
 
-  if (systemPrompt && typeof systemPrompt === "string" && systemPrompt.trim() !== "") {
+  if (
+    systemPrompt &&
+    typeof systemPrompt === "string" &&
+    systemPrompt.trim() !== ""
+  ) {
     groqMessages.push({ role: "system", content: systemPrompt.trim() });
   }
 
@@ -262,7 +282,11 @@ function getExecutionPlan(requestedModel) {
       if (GROQ_MODEL_FAST && GROQ_MODEL_FAST !== requestedModel) {
         plan.push({ provider: "groq", model: GROQ_MODEL_FAST });
       }
-      if (GROQ_MODEL && GROQ_MODEL !== requestedModel && GROQ_MODEL !== GROQ_MODEL_FAST) {
+      if (
+        GROQ_MODEL &&
+        GROQ_MODEL !== requestedModel &&
+        GROQ_MODEL !== GROQ_MODEL_FAST
+      ) {
         plan.push({ provider: "groq", model: GROQ_MODEL });
       }
       if (requestedModel !== "qwen/qwen3.8-27b") {
@@ -275,7 +299,10 @@ function getExecutionPlan(requestedModel) {
     }
   } else {
     if (genAI) {
-      plan.push({ provider: "gemini", model: requestedModel || GEMINI_DEFAULT_MODEL });
+      plan.push({
+        provider: "gemini",
+        model: requestedModel || GEMINI_DEFAULT_MODEL,
+      });
       if (requestedModel !== GEMINI_DEFAULT_MODEL) {
         plan.push({ provider: "gemini", model: GEMINI_DEFAULT_MODEL });
       }
@@ -302,14 +329,21 @@ function getExecutionPlan(requestedModel) {
 
   if (uniquePlan.length === 0) {
     if (groq) uniquePlan.push({ provider: "groq", model: GROQ_MODEL });
-    if (genAI) uniquePlan.push({ provider: "gemini", model: GEMINI_DEFAULT_MODEL });
+    if (genAI)
+      uniquePlan.push({ provider: "gemini", model: GEMINI_DEFAULT_MODEL });
   }
 
   return uniquePlan;
 }
 
 // Groq chat generation
-async function generateGroqChat(messages, modelName, temperature, systemPrompt, maxTokens) {
+async function generateGroqChat(
+  messages,
+  modelName,
+  temperature,
+  systemPrompt,
+  maxTokens,
+) {
   if (!groq) throw new Error("Groq API key not configured");
   const groqMessages = buildGroqMessages(messages, systemPrompt);
   const response = await groq.chat.completions.create({
@@ -336,7 +370,9 @@ async function generateGeminiChat(
   const generativeModel = genAI.getGenerativeModel({
     model: modelName,
     systemInstruction:
-      systemPrompt && systemPrompt.trim() !== "" ? systemPrompt.trim() : undefined,
+      systemPrompt && systemPrompt.trim() !== ""
+        ? systemPrompt.trim()
+        : undefined,
     generationConfig: {
       temperature: Number(temperature) || 0.4,
       maxOutputTokens: Number(maxTokens) || 1024,
@@ -363,7 +399,13 @@ async function generateGeminiChat(
 }
 
 // Groq chat streaming generator
-async function* streamGroq(messages, modelName, temperature, systemPrompt, maxTokens) {
+async function* streamGroq(
+  messages,
+  modelName,
+  temperature,
+  systemPrompt,
+  maxTokens,
+) {
   if (!groq) throw new Error("Groq API key not configured");
   const groqMessages = buildGroqMessages(messages, systemPrompt);
   const stream = await groq.chat.completions.create({
@@ -395,7 +437,9 @@ async function* streamGemini(
   const generativeModel = genAI.getGenerativeModel({
     model: modelName,
     systemInstruction:
-      systemPrompt && systemPrompt.trim() !== "" ? systemPrompt.trim() : undefined,
+      systemPrompt && systemPrompt.trim() !== ""
+        ? systemPrompt.trim()
+        : undefined,
     generationConfig: {
       temperature: Number(temperature) || 0.4,
       maxOutputTokens: Number(maxTokens) || 4096,
@@ -468,7 +512,10 @@ app.get(["/api/models", "/models"], async (req, res) => {
             };
           });
       } catch (gErr) {
-        console.warn("Could not fetch models dynamically from Groq:", gErr.message);
+        console.warn(
+          "Could not fetch models dynamically from Groq:",
+          gErr.message,
+        );
       }
     }
 
@@ -482,7 +529,8 @@ app.get(["/api/models", "/models"], async (req, res) => {
           const data = await response.json();
           availableGeminiModels = (data.models || [])
             .filter((m) => {
-              if (!m.supportedGenerationMethods?.includes("generateContent")) return false;
+              if (!m.supportedGenerationMethods?.includes("generateContent"))
+                return false;
               const id = (m.name || "").replace("models/", "").toLowerCase();
               const displayName = (m.displayName || "").toLowerCase();
               const fullStr = `${id} ${displayName}`;
@@ -508,7 +556,8 @@ app.get(["/api/models", "/models"], async (req, res) => {
                 "computer use",
                 "agent preview",
               ];
-              if (bannedTerms.some((term) => fullStr.includes(term))) return false;
+              if (bannedTerms.some((term) => fullStr.includes(term)))
+                return false;
               return true;
             })
             .map((m) => {
@@ -526,7 +575,10 @@ app.get(["/api/models", "/models"], async (req, res) => {
             });
         }
       } catch (gemErr) {
-        console.warn("Could not fetch models dynamically from Gemini:", gemErr.message);
+        console.warn(
+          "Could not fetch models dynamically from Gemini:",
+          gemErr.message,
+        );
       }
     }
 
@@ -549,7 +601,10 @@ app.get(["/api/models", "/models"], async (req, res) => {
     const finalModels = Array.from(combinedMap.values());
     res.json({ models: finalModels.length > 0 ? finalModels : CURATED_MODELS });
   } catch (error) {
-    console.warn("Could not fetch models dynamically, using curated list:", error.message);
+    console.warn(
+      "Could not fetch models dynamically, using curated list:",
+      error.message,
+    );
     res.json({ models: CURATED_MODELS });
   }
 });
@@ -575,7 +630,9 @@ app.post(["/api/chat", "/chat"], async (req, res) => {
 
     for (const step of plan) {
       try {
-        console.log(`[Chat API] Attempting ${step.provider.toUpperCase()} (${step.model})...`);
+        console.log(
+          `[Chat API] Attempting ${step.provider.toUpperCase()} (${step.model})...`,
+        );
         if (step.provider === "groq") {
           reply = await generateGroqChat(
             messages,
@@ -595,7 +652,9 @@ app.post(["/api/chat", "/chat"], async (req, res) => {
         }
 
         if (reply !== null && reply !== undefined) {
-          console.log(`[Chat API] Successfully responded using ${step.provider} (${step.model})`);
+          console.log(
+            `[Chat API] Successfully responded using ${step.provider} (${step.model})`,
+          );
           break;
         }
       } catch (error) {
@@ -612,7 +671,9 @@ app.post(["/api/chat", "/chat"], async (req, res) => {
 
     console.error("All AI providers and models failed:", lastError);
     res.status(500).json({
-      error: lastError?.message || "Failed to process request with available AI services.",
+      error:
+        lastError?.message ||
+        "Failed to process request with available AI services.",
     });
   } catch (error) {
     console.error("Chat API General Error:", error);
@@ -658,11 +719,25 @@ app.post(["/api/chat/stream", "/chat/stream"], async (req, res) => {
       if (req.aborted) break;
 
       try {
-        console.log(`[Stream API] Attempting ${step.provider.toUpperCase()} (${step.model})...`);
+        console.log(
+          `[Stream API] Attempting ${step.provider.toUpperCase()} (${step.model})...`,
+        );
         const generator =
           step.provider === "groq"
-            ? streamGroq(messages, step.model, temperature, systemPrompt, maxTokens)
-            : streamGemini(messages, step.model, temperature, systemPrompt, maxTokens);
+            ? streamGroq(
+                messages,
+                step.model,
+                temperature,
+                systemPrompt,
+                maxTokens,
+              )
+            : streamGemini(
+                messages,
+                step.model,
+                temperature,
+                systemPrompt,
+                maxTokens,
+              );
 
         for await (const chunk of generator) {
           if (req.aborted) break;
@@ -700,7 +775,8 @@ app.post(["/api/chat/stream", "/chat/stream"], async (req, res) => {
         res.write(
           `data: ${JSON.stringify({
             error:
-              lastError?.message || "Streaming error occurred with AI providers.",
+              lastError?.message ||
+              "Streaming error occurred with AI providers.",
           })}\n\n`,
         );
         res.end();
